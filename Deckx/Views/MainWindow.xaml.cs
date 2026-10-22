@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,6 +17,8 @@ public partial class MainWindow : Window
 
     private string _activeGroup = "Todos";
 
+    private EventWaitHandle? _senal;
+
     // Estado del arrastre para reordenar mosaicos
     private Point _dragStart;
     private ShortcutItem? _dragItem;
@@ -30,6 +33,31 @@ public partial class MainWindow : Window
         ApplyConfig();
         RenderGroups();
         RenderTiles();
+        EscucharSegundaApertura();
+    }
+
+    // Volver a abrir el acceso directo no lanza otra copia: trae esta a la pantalla de enfrente
+    private void EscucharSegundaApertura()
+    {
+        _senal = new EventWaitHandle(false, EventResetMode.AutoReset, App.SenalMostrar);
+
+        var hilo = new Thread(() =>
+        {
+            while (_senal.WaitOne())
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    TraerAlCentro();
+                    Show();
+                    Activate();
+                });
+            }
+        })
+        {
+            IsBackground = true
+        };
+
+        hilo.Start();
     }
 
     // Deja la ventana donde quedo la ultima vez y con el ancho de columnas elegido
@@ -40,7 +68,10 @@ public partial class MainWindow : Window
         Topmost = _config.Topmost;
         Opacity = _config.Opacity;
 
-        PanelRoot.Width = (_config.Columns * (TileWidth + TileGap)) - TileGap;
+        // Cada mosaico ocupa su ancho mas el margen derecho, asi que el gap NO se resta
+        PanelRoot.Width = _config.Columns * (TileWidth + TileGap);
+
+        AsegurarQueSeVea();
 
         PinButton.Foreground = _config.Topmost
             ? (Brush)FindResource("TextBrush")
@@ -485,6 +516,7 @@ public partial class MainWindow : Window
         menu.Items.Add(columns);
         menu.Items.Add(opacity);
         menu.Items.Add(new Separator());
+        menu.Items.Add(BuildMenuItem("Traer al centro", TraerAlCentro));
         menu.Items.Add(BuildMenuItem("Abrir carpeta de configuracion", () => LaunchService.OpenFolder(ConfigService.ConfigFolder)));
 
         menu.PlacementTarget = (UIElement)sender;
@@ -494,7 +526,41 @@ public partial class MainWindow : Window
     private void ChangeColumns(int count)
     {
         _config.Columns = count;
-        PanelRoot.Width = (count * (TileWidth + TileGap)) - TileGap;
+        PanelRoot.Width = count * (TileWidth + TileGap);
+
+        ConfigService.Save(_config);
+    }
+
+    // Si la posicion guardada quedo fuera de las pantallas conectadas, vuelve a la principal
+    private void AsegurarQueSeVea()
+    {
+        var dentro = Left >= SystemParameters.VirtualScreenLeft
+                  && Top >= SystemParameters.VirtualScreenTop
+                  && Left < SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth - 80
+                  && Top < SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight - 80;
+
+        if (dentro)
+        {
+            return;
+        }
+
+        TraerAlCentro();
+    }
+
+    // Deja el widget centrado en la pantalla donde esta el raton, que es donde el usuario mira
+    private void TraerAlCentro()
+    {
+        var (areaLeft, areaTop, areaAncho, areaAlto) = ScreenService.AreaDondeEstaElRaton();
+
+        // Al arrancar la ventana todavia no se ha medido: se usa el ancho configurado
+        var ancho = ActualWidth > 0 ? ActualWidth : PanelRoot.Width + 30;
+        var alto = ActualHeight > 0 ? ActualHeight : 400;
+
+        Left = areaLeft + ((areaAncho - ancho) / 2);
+        Top = areaTop + ((areaAlto - alto) / 2);
+
+        _config.Left = Left;
+        _config.Top = Top;
 
         ConfigService.Save(_config);
     }

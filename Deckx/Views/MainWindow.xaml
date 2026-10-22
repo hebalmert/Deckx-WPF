@@ -14,12 +14,12 @@
             BorderBrush="{StaticResource PanelBorderBrush}"
             BorderThickness="1"
             CornerRadius="14"
-            Padding="14">
+            Padding="14,14,6,6">
 
         <StackPanel x:Name="PanelRoot" Width="520">
 
             <!-- Cabecera: titulo, buscador y controles; por aqui se arrastra -->
-            <Grid x:Name="HeaderBar" Margin="0,0,0,12" Background="Transparent">
+            <Grid x:Name="HeaderBar" Margin="0,0,8,12" Background="Transparent">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -78,7 +78,7 @@
 
                 <Border BorderBrush="{StaticResource PanelBorderBrush}"
                         BorderThickness="0,1,0,0"
-                        Margin="0,2,0,0"
+                        Margin="0,2,8,0"
                         Padding="0,8,0,0">
                     <TextBlock Text="Clic: abrir  -  Clic derecho: menu  -  Arrastra un mosaico para reordenar"
                                FontSize="11"
