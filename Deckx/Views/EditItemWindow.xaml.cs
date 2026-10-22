@@ -12,22 +12,103 @@ namespace Deckx.Views;
 public partial class EditItemWindow : Window
 {
     private readonly ShortcutItem _item;
+    private readonly List<string> _categorias;
 
     private string _glyph;
     private string _color;
+    private string _grupo;
 
-    public EditItemWindow(ShortcutItem item)
+    // Las categorias llegan ya listas desde el widget: aqui solo se pintan
+    public EditItemWindow(ShortcutItem item, List<string> categorias)
     {
         InitializeComponent();
 
         _item = item;
+        _categorias = categorias;
         _glyph = item.IconGlyph;
         _color = item.Color;
+        _grupo = string.IsNullOrWhiteSpace(item.Group) ? PrimeraCategoria() : item.Group;
 
         LoadItem();
+        RenderGroups();
         RenderIcons();
         RenderColors();
         RefreshPreview();
+    }
+
+    private string PrimeraCategoria()
+    {
+        return _categorias.Count > 0 ? _categorias[0] : "General";
+    }
+
+    // Una categoria por chip, mas el boton para crear otra sin salir del dialogo
+    private void RenderGroups()
+    {
+        GroupsPanel.Children.Clear();
+
+        foreach (var categoria in _categorias.OrderBy(x => x))
+        {
+            var chip = new Button
+            {
+                Style = (Style)FindResource("ChipButton"),
+                Content = categoria,
+                Tag = categoria,
+                Margin = new Thickness(0, 0, 6, 6)
+            };
+
+            if (categoria == _grupo)
+            {
+                chip.Foreground = (Brush)FindResource("TextBrush");
+                chip.Background = new SolidColorBrush(Color.FromRgb(0x24, 0x31, 0x56));
+            }
+
+            chip.Click += GroupChip_Click;
+
+            GroupsPanel.Children.Add(chip);
+        }
+
+        var nueva = new Button
+        {
+            Style = (Style)FindResource("ChipButton"),
+            Content = "+ Nueva",
+            Margin = new Thickness(0, 0, 6, 6),
+            ToolTip = "Crear una categoria"
+        };
+
+        nueva.Click += NuevaCategoria_Click;
+
+        GroupsPanel.Children.Add(nueva);
+    }
+
+    private void GroupChip_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string categoria })
+        {
+            return;
+        }
+
+        _grupo = categoria;
+
+        RenderGroups();
+    }
+
+    private void NuevaCategoria_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new TextPromptWindow("Nueva categoria", "Nombre", string.Empty) { Owner = this };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        if (!_categorias.Contains(dialog.Valor))
+        {
+            _categorias.Add(dialog.Valor);
+        }
+
+        _grupo = dialog.Valor;
+
+        RenderGroups();
     }
 
     // Trae a la pantalla lo que ya tenga el acceso
@@ -37,7 +118,6 @@ public partial class EditItemWindow : Window
 
         NameBox.Text = _item.Name;
         SubtitleBox.Text = _item.Subtitle;
-        GroupBox.Text = string.IsNullOrWhiteSpace(_item.Group) ? "General" : _item.Group;
         PathBox.Text = _item.Path;
         ArgumentsBox.Text = _item.Arguments;
 
@@ -194,7 +274,7 @@ public partial class EditItemWindow : Window
 
         _item.Name = NameBox.Text.Trim();
         _item.Subtitle = SubtitleBox.Text.Trim();
-        _item.Group = string.IsNullOrWhiteSpace(GroupBox.Text) ? "General" : GroupBox.Text.Trim();
+        _item.Group = _grupo;
         _item.Path = PathBox.Text.Trim();
         _item.Arguments = ArgumentsBox.Text.Trim();
         _item.IconGlyph = _glyph;

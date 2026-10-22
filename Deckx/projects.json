@@ -5,6 +5,7 @@
   "Topmost": true,
   "Collapsed": false,
   "Opacity": 0.96,
+  "Groups": [ "Windows", "Carpetas", "Proyectos" ],
   "Items": [
     {
       "Name": "Explorador",

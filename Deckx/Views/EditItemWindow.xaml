@@ -38,8 +38,8 @@
             <TextBlock Text="Descripcion corta" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,4"/>
             <TextBox x:Name="SubtitleBox" Style="{StaticResource FieldBox}" Margin="0,0,0,10"/>
 
-            <TextBlock Text="Grupo" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,4"/>
-            <TextBox x:Name="GroupBox" Style="{StaticResource FieldBox}" Margin="0,0,0,10"/>
+            <TextBlock Text="Categoria" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,6"/>
+            <WrapPanel x:Name="GroupsPanel" Margin="0,0,0,10"/>
 
             <TextBlock Text="Que debe abrir" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,4"/>
             <Grid Margin="0,0,0,10">

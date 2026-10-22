@@ -81,15 +81,13 @@ public partial class MainWindow : Window
         CollapseButton.Content = _config.Collapsed ? "" : "";
     }
 
-    // Chips: Todos mas los grupos que existan en los accesos
+    // Chips: Todos mas las categorias creadas, y al final el boton para crear otra
     private void RenderGroups()
     {
         GroupsPanel.Children.Clear();
 
-        var groups = _config.Items
-            .Select(x => x.Group)
+        var groups = _config.Groups
             .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Distinct()
             .OrderBy(x => x)
             .ToList();
 
@@ -120,6 +118,41 @@ public partial class MainWindow : Window
 
             GroupsPanel.Children.Add(chip);
         }
+
+        // Chip final para crear una categoria sin necesidad de tener accesos todavia
+        var nueva = new Button
+        {
+            Style = (Style)FindResource("ChipButton"),
+            Content = "+ Categoria",
+            Foreground = (Brush)FindResource("TextMutedBrush"),
+            ToolTip = "Crear una categoria"
+        };
+
+        nueva.Click += (_, _) => CrearCategoria();
+
+        GroupsPanel.Children.Add(nueva);
+    }
+
+    private void CrearCategoria()
+    {
+        var dialog = new TextPromptWindow("Nueva categoria", "Nombre", string.Empty) { Owner = this };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        var nombre = dialog.Valor;
+
+        // Si ya existe simplemente se selecciona, no se duplica
+        if (!_config.Groups.Contains(nombre))
+        {
+            _config.Groups.Add(nombre);
+        }
+
+        _activeGroup = nombre;
+
+        SaveAndRefresh();
     }
 
     // Pinta los mosaicos filtrados mas el mosaico de agregar
@@ -375,6 +408,13 @@ public partial class MainWindow : Window
             item.Group = nuevo;
         }
 
+        _config.Groups.Remove(group);
+
+        if (!_config.Groups.Contains(nuevo))
+        {
+            _config.Groups.Add(nuevo);
+        }
+
         if (_activeGroup == group)
         {
             _activeGroup = nuevo;
@@ -402,6 +442,14 @@ public partial class MainWindow : Window
             item.Group = "General";
         }
 
+        _config.Groups.Remove(group);
+
+        // General tiene que existir para recibirlos
+        if (cuantos > 0 && !_config.Groups.Contains("General"))
+        {
+            _config.Groups.Add("General");
+        }
+
         _activeGroup = "Todos";
 
         SaveAndRefresh();
@@ -422,6 +470,7 @@ public partial class MainWindow : Window
         }
 
         _config.Items.RemoveAll(x => x.Group == group);
+        _config.Groups.Remove(group);
 
         _activeGroup = "Todos";
 
@@ -491,9 +540,14 @@ public partial class MainWindow : Window
 
     private void AddTile_Click(object sender, RoutedEventArgs e)
     {
-        var item = new ShortcutItem { Order = _config.Items.Count };
+        // El acceso nace en la categoria que se este viendo
+        var item = new ShortcutItem
+        {
+            Order = _config.Items.Count,
+            Group = _activeGroup == "Todos" ? string.Empty : _activeGroup
+        };
 
-        var dialog = new EditItemWindow(item) { Owner = this };
+        var dialog = new EditItemWindow(item, _config.Groups) { Owner = this };
 
         if (dialog.ShowDialog() != true)
         {
@@ -506,7 +560,7 @@ public partial class MainWindow : Window
 
     private void EditItem(ShortcutItem item)
     {
-        var dialog = new EditItemWindow(item) { Owner = this };
+        var dialog = new EditItemWindow(item, _config.Groups) { Owner = this };
 
         if (dialog.ShowDialog() != true)
         {
@@ -532,6 +586,20 @@ public partial class MainWindow : Window
 
     private void SaveAndRefresh()
     {
+        // Ningun acceso puede quedar en una categoria que no existe, o no se veria su chip
+        foreach (var item in _config.Items)
+        {
+            if (string.IsNullOrWhiteSpace(item.Group))
+            {
+                item.Group = "General";
+            }
+
+            if (!_config.Groups.Contains(item.Group))
+            {
+                _config.Groups.Add(item.Group);
+            }
+        }
+
         ConfigService.Save(_config);
         RenderGroups();
         RenderTiles();

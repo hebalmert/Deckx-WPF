@@ -81,11 +81,31 @@ public static class ConfigService
     {
         try
         {
-            return JsonSerializer.Deserialize<WidgetConfig>(json) ?? new WidgetConfig();
+            var config = JsonSerializer.Deserialize<WidgetConfig>(json) ?? new WidgetConfig();
+
+            CompletarCategorias(config);
+
+            return config;
         }
         catch
         {
             return new WidgetConfig();
+        }
+    }
+
+    // Una configuracion vieja no trae la lista de categorias: se arma con las que usan los accesos
+    private static void CompletarCategorias(WidgetConfig config)
+    {
+        var usadas = config.Items
+            .Select(x => x.Group)
+            .Where(x => !string.IsNullOrWhiteSpace(x));
+
+        foreach (var grupo in usadas)
+        {
+            if (!config.Groups.Contains(grupo))
+            {
+                config.Groups.Add(grupo);
+            }
         }
     }
 }

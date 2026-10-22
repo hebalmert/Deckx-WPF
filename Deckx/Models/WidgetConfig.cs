@@ -15,5 +15,8 @@ public class WidgetConfig
 
     public double Opacity { get; set; } = 0.96;
 
+    // Las categorias existen por si mismas: se pueden crear antes de tener accesos dentro
+    public List<string> Groups { get; set; } = new();
+
     public List<ShortcutItem> Items { get; set; } = new();
 }
