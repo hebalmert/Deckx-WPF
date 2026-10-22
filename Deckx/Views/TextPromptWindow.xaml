@@ -1,0 +1,56 @@
+<Window x:Class="Deckx.Views.TextPromptWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Deckx"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        SizeToContent="Height"
+        Width="360"
+        WindowStartupLocation="CenterOwner">
+
+    <Border Background="{StaticResource PanelBrush}"
+            BorderBrush="{StaticResource PanelBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="14"
+            Padding="16">
+
+        <StackPanel>
+
+            <TextBlock x:Name="TitleText"
+                       Text="Renombrar"
+                       FontSize="14"
+                       Foreground="{StaticResource TextBrush}"
+                       Margin="0,0,0,12"/>
+
+            <TextBlock x:Name="LabelText"
+                       Text="Nombre"
+                       FontSize="11"
+                       Foreground="{StaticResource TextMutedBrush}"
+                       Margin="0,0,0,4"/>
+
+            <TextBox x:Name="ValueBox"
+                     Style="{StaticResource FieldBox}"
+                     Margin="0,0,0,6"/>
+
+            <TextBlock x:Name="ErrorText"
+                       Text=""
+                       FontSize="11"
+                       Foreground="#F09595"
+                       Margin="0,0,0,8"
+                       Visibility="Collapsed"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource GhostButton}"
+                        Content="Cancelar"
+                        Margin="0,0,8,0"
+                        Click="CancelButton_Click"/>
+                <Button Style="{StaticResource PrimaryButton}"
+                        Content="Guardar"
+                        Click="SaveButton_Click"/>
+            </StackPanel>
+
+        </StackPanel>
+    </Border>
+</Window>

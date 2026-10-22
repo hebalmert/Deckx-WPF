@@ -15,11 +15,12 @@
     <Product>Deckx</Product>
   </PropertyGroup>
 
-  <!-- La semilla viaja con el exe; la configuracion viva queda en AppData -->
+  <!-- La semilla va DENTRO del exe para poder compartirlo suelto, y tambien al lado
+       por si se quiere cambiar sin recompilar. La configuracion viva queda en AppData -->
   <ItemGroup>
-    <None Update="projects.json">
+    <EmbeddedResource Include="projects.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

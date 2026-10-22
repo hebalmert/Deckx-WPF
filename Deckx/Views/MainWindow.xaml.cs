@@ -112,6 +112,12 @@ public partial class MainWindow : Window
 
             chip.Click += Chip_Click;
 
+            // Todos no es una categoria de verdad, no se puede renombrar ni borrar
+            if (group != "Todos")
+            {
+                chip.ContextMenu = BuildGroupMenu(group);
+            }
+
             GroupsPanel.Children.Add(chip);
         }
     }
@@ -340,6 +346,88 @@ public partial class MainWindow : Window
         SaveAndRefresh();
     }
 
+    // Menu de una categoria: se puede renombrar o quitar
+    private ContextMenu BuildGroupMenu(string group)
+    {
+        var menu = new ContextMenu();
+
+        menu.Items.Add(BuildMenuItem("Renombrar categoria", () => RenombrarCategoria(group)));
+        menu.Items.Add(BuildMenuItem("Quitar categoria", () => QuitarCategoria(group)));
+        menu.Items.Add(new Separator());
+        menu.Items.Add(BuildMenuItem("Eliminar categoria y sus accesos", () => EliminarCategoriaConAccesos(group)));
+
+        return menu;
+    }
+
+    private void RenombrarCategoria(string group)
+    {
+        var dialog = new TextPromptWindow("Renombrar categoria", "Nuevo nombre", group) { Owner = this };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        var nuevo = dialog.Valor;
+
+        foreach (var item in _config.Items.Where(x => x.Group == group))
+        {
+            item.Group = nuevo;
+        }
+
+        if (_activeGroup == group)
+        {
+            _activeGroup = nuevo;
+        }
+
+        SaveAndRefresh();
+    }
+
+    // Quita la categoria pero conserva los accesos, que pasan a General
+    private void QuitarCategoria(string group)
+    {
+        var cuantos = _config.Items.Count(x => x.Group == group);
+
+        var confirm = MessageBox.Show(
+            $"Quitar la categoria \"{group}\"?\n\nSus {cuantos} accesos pasan a General.",
+            "Deckx", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+        if (confirm != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        foreach (var item in _config.Items.Where(x => x.Group == group))
+        {
+            item.Group = "General";
+        }
+
+        _activeGroup = "Todos";
+
+        SaveAndRefresh();
+    }
+
+    // Borra la categoria con todo lo que tiene dentro
+    private void EliminarCategoriaConAccesos(string group)
+    {
+        var cuantos = _config.Items.Count(x => x.Group == group);
+
+        var confirm = MessageBox.Show(
+            $"Eliminar la categoria \"{group}\" y sus {cuantos} accesos?\n\nEsto no se puede deshacer.",
+            "Deckx", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+        if (confirm != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        _config.Items.RemoveAll(x => x.Group == group);
+
+        _activeGroup = "Todos";
+
+        SaveAndRefresh();
+    }
+
     private ContextMenu BuildMenu(ShortcutItem item)
     {
         var menu = new ContextMenu();
@@ -517,10 +605,82 @@ public partial class MainWindow : Window
         menu.Items.Add(opacity);
         menu.Items.Add(new Separator());
         menu.Items.Add(BuildMenuItem("Traer al centro", TraerAlCentro));
+        menu.Items.Add(new Separator());
+
+        // Instalar solo tiene sentido cuando el exe corre desde otra carpeta
+        if (InstallService.YaEstaInstalado())
+        {
+            menu.Items.Add(BuildMenuItem("Quitar de este PC", QuitarDeEstePc));
+        }
+        else
+        {
+            menu.Items.Add(BuildMenuItem("Instalar en este PC", InstalarEnEstePc));
+        }
+
         menu.Items.Add(BuildMenuItem("Abrir carpeta de configuracion", () => LaunchService.OpenFolder(ConfigService.ConfigFolder)));
 
         menu.PlacementTarget = (UIElement)sender;
         menu.IsOpen = true;
+    }
+
+    // Se copia al arranque de Windows y deja el acceso directo en el escritorio
+    private void InstalarEnEstePc()
+    {
+        var confirm = MessageBox.Show(
+            "Deckx quedara en el arranque de Windows, con su acceso directo en el escritorio.\n\n" +
+            "Tus accesos no se tocan: viven aparte en tu carpeta de usuario.",
+            "Instalar Deckx", MessageBoxButton.OKCancel, MessageBoxImage.Information);
+
+        if (confirm != MessageBoxResult.OK)
+        {
+            return;
+        }
+
+        try
+        {
+            InstallService.Instalar();
+
+            MessageBox.Show(
+                "Listo. Deckx arrancara con Windows.\n\nEsta copia la puedes borrar.",
+                "Deckx", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"No se pudo instalar:\n\n{ex.Message}", "Deckx",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void QuitarDeEstePc()
+    {
+        var confirm = MessageBox.Show(
+            "Deckx dejara de arrancar con Windows y se cerrara.\n\nTus accesos se conservan.",
+            "Quitar Deckx", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+        if (confirm != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        try
+        {
+            // El exe no se puede borrar mientras corre: lo borra un comando que espera a que cierre
+            var comando = $"/c timeout /t 2 /nobreak >nul & del \"{InstallService.RutaEnArranque}\"";
+
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", comando)
+            {
+                CreateNoWindow = true,
+                UseShellExecute = false
+            });
+
+            InstallService.Desinstalar();
+        }
+        catch
+        {
+            // Si falla el borrado del acceso directo no vale la pena molestar
+        }
+
+        Close();
     }
 
     private void ChangeColumns(int count)

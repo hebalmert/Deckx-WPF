@@ -1,37 +1,28 @@
 {
-  "Left": 80,
-  "Top": 80,
+  "Left": 120,
+  "Top": 120,
   "Columns": 4,
   "Topmost": true,
   "Collapsed": false,
   "Opacity": 0.96,
   "Items": [
     {
-      "Name": "Tu solucion",
-      "Subtitle": "Abre Visual Studio",
-      "Path": "C:\\Ruta\\A\\TuSolucion.slnx",
-      "IconGlyph": "\uE943",
-      "Color": "#378ADD",
-      "Group": "Proyectos",
+      "Name": "Explorador",
+      "Subtitle": "Archivos",
+      "Path": "explorer.exe",
+      "IconGlyph": "\uE8B7",
+      "Color": "#BA7517",
+      "Group": "Windows",
       "Order": 1
     },
     {
-      "Name": "Repositorios",
-      "Subtitle": "Carpeta de codigo",
-      "Path": "%USERPROFILE%\\source\\repos",
-      "IconGlyph": "\uE8B7",
+      "Name": "Configuracion",
+      "Subtitle": "Ajustes",
+      "Path": "ms-settings:",
+      "IconGlyph": "\uE90F",
       "Color": "#5F5E5A",
-      "Group": "Proyectos",
-      "Order": 2
-    },
-    {
-      "Name": "Bloc de notas",
-      "Subtitle": "Programa",
-      "Path": "notepad.exe",
-      "IconGlyph": "\uE756",
-      "Color": "#639922",
       "Group": "Windows",
-      "Order": 3
+      "Order": 2
     },
     {
       "Name": "Calculadora",
@@ -40,25 +31,88 @@
       "IconGlyph": "\uE756",
       "Color": "#7F77DD",
       "Group": "Windows",
+      "Order": 3
+    },
+    {
+      "Name": "Bloc de notas",
+      "Subtitle": "Programa",
+      "Path": "notepad.exe",
+      "IconGlyph": "\uE756",
+      "Color": "#639922",
+      "Group": "Windows",
       "Order": 4
+    },
+    {
+      "Name": "Terminal",
+      "Subtitle": "PowerShell",
+      "Path": "powershell.exe",
+      "IconGlyph": "\uE943",
+      "Color": "#378ADD",
+      "Group": "Windows",
+      "Order": 5
+    },
+    {
+      "Name": "Tareas",
+      "Subtitle": "Administrador",
+      "Path": "taskmgr.exe",
+      "IconGlyph": "\uE9D9",
+      "Color": "#E24B4A",
+      "Group": "Windows",
+      "Order": 6
     },
     {
       "Name": "Mi usuario",
       "Subtitle": "Carpeta",
       "Path": "%USERPROFILE%",
-      "IconGlyph": "\uE8B7",
+      "IconGlyph": "\uE77B",
       "Color": "#5F5E5A",
-      "Group": "Windows",
-      "Order": 5
+      "Group": "Carpetas",
+      "Order": 7
+    },
+    {
+      "Name": "Descargas",
+      "Subtitle": "Carpeta",
+      "Path": "%USERPROFILE%\\Downloads",
+      "IconGlyph": "\uE8B7",
+      "Color": "#0F8FA5",
+      "Group": "Carpetas",
+      "Order": 8
+    },
+    {
+      "Name": "Documentos",
+      "Subtitle": "Carpeta",
+      "Path": "%USERPROFILE%\\Documents",
+      "IconGlyph": "\uE8A5",
+      "Color": "#D4537E",
+      "Group": "Carpetas",
+      "Order": 9
+    },
+    {
+      "Name": "Escritorio",
+      "Subtitle": "Carpeta",
+      "Path": "%USERPROFILE%\\Desktop",
+      "IconGlyph": "\uE8B7",
+      "Color": "#1D9E75",
+      "Group": "Carpetas",
+      "Order": 10
+    },
+    {
+      "Name": "Tu solucion",
+      "Subtitle": "Abre Visual Studio",
+      "Path": "C:\\Ruta\\A\\TuSolucion.slnx",
+      "IconGlyph": "\uE943",
+      "Color": "#D85A30",
+      "Group": "Proyectos",
+      "Order": 11
     },
     {
       "Name": "GitHub",
       "Subtitle": "Pagina web",
       "Path": "https://github.com",
       "IconGlyph": "\uE774",
-      "Color": "#0F8FA5",
-      "Group": "Web",
-      "Order": 6
+      "Color": "#378ADD",
+      "Group": "Proyectos",
+      "Order": 12
     }
   ]
 }

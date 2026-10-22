@@ -15,6 +15,9 @@ public static class ConfigService
 
     private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
 
+    // Nombre del recurso: espacio raiz del proyecto mas el archivo
+    private const string SemillaIncrustada = "Deckx.projects.json";
+
     public static string ConfigFolder => Folder;
 
     public static WidgetConfig Load()
@@ -51,16 +54,38 @@ public static class ConfigService
         }
     }
 
+    // Semilla de la primera vez, en dos niveles
     private static WidgetConfig LoadSeed()
     {
+        // 1. Un projects.json junto al ejecutable gana, para cambiarlo sin recompilar
         var seedPath = Path.Combine(AppContext.BaseDirectory, "projects.json");
 
-        if (!File.Exists(seedPath))
+        if (File.Exists(seedPath))
+        {
+            return Deserializar(File.ReadAllText(seedPath));
+        }
+
+        // 2. Si no hay, se usa la que viaja dentro del exe: asi se puede compartir suelto
+        using var recurso = typeof(ConfigService).Assembly.GetManifestResourceStream(SemillaIncrustada);
+
+        if (recurso is null)
         {
             return new WidgetConfig();
         }
 
-        var json = File.ReadAllText(seedPath);
-        return JsonSerializer.Deserialize<WidgetConfig>(json) ?? new WidgetConfig();
+        using var lector = new StreamReader(recurso);
+        return Deserializar(lector.ReadToEnd());
+    }
+
+    private static WidgetConfig Deserializar(string json)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<WidgetConfig>(json) ?? new WidgetConfig();
+        }
+        catch
+        {
+            return new WidgetConfig();
+        }
     }
 }
